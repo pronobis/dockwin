@@ -353,6 +353,24 @@ Position must be one of: top, bottom, left, right."
             (buffer-list frame))))
 
 
+(defun dockwin--get-other-buffer (position &optional frame)
+  "Return the most recent, other, live buffer from history at POSITION in FRAME.
+If no such buffer in history, try any live buffer that would
+match the window.  If none such buffer found, return nil.
+FRAME defaults to current frame.
+Position must be one of: top, bottom, left, right."
+  (let ((cur-buf (dockwin--get-buffer position frame)))
+    (or
+     (--first (and (buffer-live-p it)
+                   (not (eq cur-buf it)))
+              (dockwin--get-buffer-history position frame))
+     (--first (let ((conf (dockwin--get-buffer-settings it)))
+                (and (not (eq cur-buf it))
+                     conf
+                     (eq (dockwin--get-position-property conf) position)))
+              (buffer-list frame)))))
+
+
 (defun dockwin--set-window (position window &optional frame)
   "Set the current window at POSITION to WINDOW in FRAME.
 FRAME defaults to current frame."
@@ -796,33 +814,6 @@ currently selected window."
   (dockwin-close-window 'right))
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; dockwin-buffer-mode
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-minor-mode dockwin-buffer-mode
-  "DockWin buffer mode.
-
-The mode provides additional key bindings for buffers shown in
-DockWin windows.
-
-Interactively with no argument, this command
-toggles the mode. A positive prefix argument enables the mode,
-any other prefix argument disables it. From Lisp, argument
-omitted or nil enables the mode, `toggle' toggles the state."
-  :init-value nil
-  :lighter " DockWinB"
-  ;; The minor mode bindings.
-  :keymap `((,(kbd "C-x C-b") . dockwin-switch-to-buffer)
-            (,(kbd "C-x C-g") . dockwin-close-window))
-  ;; Make this minor mode survive major mode change
-  (put 'dockwin-buffer-mode 'permanent-local t)
-  ;; Add modeline
-  (dockwin--add-mode-line)
-  (add-hook 'after-change-major-mode-hook  ; Needed in case the major mode
-            'dockwin--add-mode-line))      ; is changed
-
-
 (defun dockwin-switch-to-buffer (&optional position)
   "Switch buffer in the window at POSITION to other valid buffer in that window.
 If POSITION is nil, and inside a docking window, use the current window position."
@@ -846,6 +837,53 @@ If POSITION is nil, and inside a docking window, use the current window position
         (select-window
          (display-buffer
           (ido-completing-read "Switch to buffer: " buffer-names)))))))
+
+
+(defun dockwin-kill-buffer (&optional position)
+  "Kill the current buffer in window at POSITION.
+Show the next valid buffer in the window instead.
+If POSITION is nil, use the currently selected window."
+  (interactive)
+  (unless position
+    (setq position (dockwin--get-window-position (selected-window))))
+  (let* ((window (dockwin--get-window position))
+         current-buffer other-buffer)
+    (when window
+      (setq current-buffer (window-buffer window))
+      (setq other-buffer (dockwin--get-other-buffer position))
+      (when other-buffer
+        ;; Recreate the window with previous buffer
+        (dockwin--display-buffer-function other-buffer  ; Don't activate
+                                          '((ignore-activate . t))))
+      (kill-buffer current-buffer))))
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;; dockwin-buffer-mode
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define-minor-mode dockwin-buffer-mode
+  "DockWin buffer mode.
+
+The mode provides additional key bindings for buffers shown in
+DockWin windows.
+
+Interactively with no argument, this command
+toggles the mode. A positive prefix argument enables the mode,
+any other prefix argument disables it. From Lisp, argument
+omitted or nil enables the mode, `toggle' toggles the state."
+  :init-value nil
+  :lighter " DockWinB"
+  ;; The minor mode bindings.
+  :keymap `((,(kbd "C-x C-b") . dockwin-switch-to-buffer)
+            (,(kbd "C-x C-g") . dockwin-close-window)
+            (,(kbd "C-x C-k") . dockwin-kill-buffer))
+  ;; Make this minor mode survive major mode change
+  (put 'dockwin-buffer-mode 'permanent-local t)
+  ;; Add modeline
+  (dockwin--add-mode-line)
+  (add-hook 'after-change-major-mode-hook  ; Needed in case the major mode
+            'dockwin--add-mode-line))      ; is changed
 
 
 
