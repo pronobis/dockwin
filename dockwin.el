@@ -847,15 +847,19 @@ If POSITION is nil, use the currently selected window."
   (unless position
     (setq position (dockwin--get-window-position (selected-window))))
   (let* ((window (dockwin--get-window position))
-         current-buffer other-buffer)
-    (when window
-      (setq current-buffer (window-buffer window))
-      (setq other-buffer (dockwin--get-other-buffer position))
-      (when other-buffer
+         cur-buf other-buf)
+    (if (not window)
+        ;; Standard kill if buffer is outside the docking window
+        (unless position
+          (kill-buffer (current-buffer)))
+      ;; Kill in docking window
+      (setq cur-buf (window-buffer window))
+      (setq other-buf (dockwin--get-other-buffer position))
+      (when other-buf
         ;; Recreate the window with previous buffer
-        (dockwin--display-buffer-function other-buffer  ; Don't activate
+        (dockwin--display-buffer-function other-buf  ; Don't activate
                                           '((ignore-activate . t))))
-      (kill-buffer current-buffer))))
+      (kill-buffer cur-buf))))
 
 
 
@@ -895,23 +899,26 @@ omitted or nil enables the mode, `toggle' toggles the state."
 (defun dockwin--get-mode-line ()
   "Return mode-line string for the current docking window."
   (let ((position (dockwin--get-window-position (selected-window))))
-    (when position
-      (concat
-       (propertize "│" 'face 'dockwin-mode-line-default-face)
-       (let* ((buffer-list
-               (--sort (string< (string-trim (buffer-name it))
-                                (string-trim (buffer-name other)))
-                (--filter (let ((conf (dockwin--get-buffer-settings it)))
-                          (and conf (eq (dockwin--get-position-property conf) position)))
-                        (buffer-list)))))
-         (--reduce-from (let ((bn (propertize (string-trim (buffer-name it))
-                                              'face
-                                              (if (eq it (current-buffer))
-                                                  'dockwin-mode-line-current-buffer-face
-                                                'dockwin-mode-line-other-buffer-face))))
+    (if position
+        ;; Buffer is in a docking window
+        (concat
+         (propertize "│" 'face 'dockwin-mode-line-default-face)
+         (let* ((buffer-list
+                 (--sort (string< (string-trim (buffer-name it))
+                                  (string-trim (buffer-name other)))
+                         (--filter (let ((conf (dockwin--get-buffer-settings it)))
+                                     (and conf (eq (dockwin--get-position-property conf) position)))
+                                   (buffer-list)))))
+           (--reduce-from (let ((bn (propertize (string-trim (buffer-name it))
+                                                'face
+                                                (if (eq it (current-buffer))
+                                                    'dockwin-mode-line-current-buffer-face
+                                                  'dockwin-mode-line-other-buffer-face))))
                             (if acc (concat acc "│" bn) bn))
-                        nil buffer-list))
-       (propertize "│" 'face 'dockwin-mode-line-default-face)))))
+                          nil buffer-list))
+         (propertize "│" 'face 'dockwin-mode-line-default-face))
+      ;; Buffer is not in a docking window
+      (propertize (buffer-name) 'face 'mode-line-buffer-id))))
 
 (defsubst dockwin--mode-line-set-p ()
   "Check if DockWin modeline is set."
