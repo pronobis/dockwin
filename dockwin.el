@@ -326,6 +326,38 @@ The IGNORE argument is required by
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;  Getters/setters/checkers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dockwin--get-window-position (window)
+  "Return position of the given WINDOW if it's a live docking window.
+If it's not a live docking window, return nil.  This searches for
+windows in all frames."
+  (and (window-live-p window)
+       (--reduce-from (or acc
+                          (and (eq window (dockwin--get-bottom-window it)) 'bottom)
+                          (and (eq window (dockwin--get-top-window it)) 'top)
+                          (and (eq window (dockwin--get-left-window it)) 'left)
+                          (and (eq window (dockwin--get-right-window it)) 'right))
+                      nil               ; Init value
+                      (frame-list))))
+
+
+(defun dockwin--get-buffer-history (position &optional frame)
+  "Return buffer history at POSITION in FRAME.
+FRAME defaults to current frame."
+  (cond ((eq position 'bottom) (dockwin--get-bottom-buffer-history frame))
+        ((eq position 'top) (dockwin--get-top-buffer-history frame))
+        ((eq position 'left) (dockwin--get-left-buffer-history frame))
+        ((eq position 'right) (dockwin--get-right-buffer-history frame))))
+
+
+(defun dockwin--set-buffer-history (position history &optional frame)
+  "Set buffer history at POSITION to HISTORY in FRAME.
+FRAME defaults to current frame."
+  (cond ((eq position 'bottom) (dockwin--set-bottom-buffer-history history frame))
+        ((eq position 'top) (dockwin--set-top-buffer-history history frame))
+        ((eq position 'left) (dockwin--set-left-buffer-history history frame))
+        ((eq position 'right) (dockwin--set-right-buffer-history history frame))))
+
+
 (defun dockwin--get-window (position &optional frame)
   "Return the current window at POSITION in FRAME if it's live.
 Otherwise return nil.  FRAME defaults to current frame.
@@ -337,6 +369,15 @@ Position must be one of: top, bottom, left, right."
     (if (window-live-p window)
         window
       nil)))
+
+
+(defun dockwin--set-window (position window &optional frame)
+  "Set the current window at POSITION to WINDOW in FRAME.
+FRAME defaults to current frame."
+  (cond ((eq position 'bottom) (dockwin--set-bottom-window window frame))
+        ((eq position 'top) (dockwin--set-top-window window frame))
+        ((eq position 'left) (dockwin--set-left-window window frame))
+        ((eq position 'right) (dockwin--set-right-window window frame))))
 
 
 (defun dockwin--get-buffer (position &optional frame)
@@ -369,33 +410,6 @@ Position must be one of: top, bottom, left, right."
                      conf
                      (eq (dockwin--get-position-property conf) position)))
               (buffer-list frame)))))
-
-
-(defun dockwin--set-window (position window &optional frame)
-  "Set the current window at POSITION to WINDOW in FRAME.
-FRAME defaults to current frame."
-  (cond ((eq position 'bottom) (dockwin--set-bottom-window window frame))
-        ((eq position 'top) (dockwin--set-top-window window frame))
-        ((eq position 'left) (dockwin--set-left-window window frame))
-        ((eq position 'right) (dockwin--set-right-window window frame))))
-
-
-(defun dockwin--get-buffer-history (position &optional frame)
-  "Return buffer history at POSITION in FRAME.
-FRAME defaults to current frame."
-  (cond ((eq position 'bottom) (dockwin--get-bottom-buffer-history frame))
-        ((eq position 'top) (dockwin--get-top-buffer-history frame))
-        ((eq position 'left) (dockwin--get-left-buffer-history frame))
-        ((eq position 'right) (dockwin--get-right-buffer-history frame))))
-
-
-(defun dockwin--set-buffer-history (position history &optional frame)
-  "Set buffer history at POSITION to HISTORY in FRAME.
-FRAME defaults to current frame."
-  (cond ((eq position 'bottom) (dockwin--set-bottom-buffer-history history frame))
-        ((eq position 'top) (dockwin--set-top-buffer-history history frame))
-        ((eq position 'left) (dockwin--set-left-buffer-history history frame))
-        ((eq position 'right) (dockwin--set-right-buffer-history history frame))))
 
 
 (defun dockwin--add-buffer-to-history (position buffer &optional frame)
@@ -432,20 +446,6 @@ FRAME defaults to current frame."
   (--first (and (not (eq it (selected-window)))
                 (window-live-p it))
            (dockwin--get-window-history frame)))
-
-
-(defun dockwin--get-window-position (window)
-  "Return position of the given WINDOW if it's a live docking window.
-If it's not a live docking window, return nil.  This searches for
-windows in all frames."
-  (and (window-live-p window)
-       (--reduce-from (or acc
-                          (and (eq window (dockwin--get-bottom-window it)) 'bottom)
-                          (and (eq window (dockwin--get-top-window it)) 'top)
-                          (and (eq window (dockwin--get-left-window it)) 'left)
-                          (and (eq window (dockwin--get-right-window it)) 'right))
-                      nil               ; Init value
-                      (frame-list))))
 
 
 
@@ -939,7 +939,6 @@ omitted or nil enables the mode, `toggle' toggles the state."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Let DockWin control what gets activated
 (setq help-window-select nil)
-
 
 
 
