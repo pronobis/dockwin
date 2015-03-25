@@ -384,8 +384,8 @@ FRAME defaults to current frame."
   "Return the most recent, live buffer from history at POSITION in FRAME.
 If no such buffer in history, try any live buffer that would
 match the window.  If none such buffer found, return nil.
-FRAME defaults to current frame.
-Position must be one of: top, bottom, left, right."
+FRAME defaults to current frame.  Position must be one of:
+top, bottom, left, right."
   (or
    (--first (buffer-live-p it)
             (dockwin--get-buffer-history position frame))
@@ -398,17 +398,17 @@ Position must be one of: top, bottom, left, right."
   "Return the most recent, other, live buffer from history at POSITION in FRAME.
 If no such buffer in history, try any live buffer that would
 match the window.  If none such buffer found, return nil.
-FRAME defaults to current frame.
-Position must be one of: top, bottom, left, right."
-  (let ((cur-buf (dockwin--get-buffer position frame)))
+FRAME defaults to current frame.  Position must be one of:
+top, bottom, left, right."
+  (let (second)
     (or
      (--first (and (buffer-live-p it)
-                   (not (eq cur-buf it)))
+                   (if second t (setq second t) nil))
               (dockwin--get-buffer-history position frame))
      (--first (let ((conf (dockwin--get-buffer-settings it)))
-                (and (not (eq cur-buf it))
-                     conf
-                     (eq (dockwin--get-position-property conf) position)))
+                (and conf
+                     (eq (dockwin--get-position-property conf) position)
+                     (if second t (setq second t) nil)))
               (buffer-list frame)))))
 
 
