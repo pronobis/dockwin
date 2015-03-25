@@ -4,6 +4,7 @@
 
 ;; Author: Andrzej Pronobis <a.pronobis@gmail.com>
 ;; Package-Requires: ((dash "2.10.0"))
+;; Package-Requires: ((s "1.9.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,6 +25,7 @@
 ;;; Code:
 
 (require 'dash)
+(require 's)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -186,6 +188,12 @@ Available keywords:
 
 (defcustom dockwin-add-buffers-to-modeline t
   "Set nil if you want to disable the modeline buffer list for docking windows."
+  :type 'boolean
+  :group 'dockwin)
+
+
+(defcustom dockwin-trim-special-buffer-names nil
+  "If not nil, asterisks will be trimmed from special buffer names in mode-line."
   :type 'boolean
   :group 'dockwin)
 
@@ -427,13 +435,21 @@ Position must be one of: top, bottom, left, right."
             (buffer-list frame))))
 
 
+(defun dockwin--trim-buffer-name (buffer)
+  "Prepare trimmed buffer name for given BUFFER."
+  (let ((bn (s-trim (buffer-name buffer))))
+    (if dockwin-trim-special-buffer-names
+        (s-chop-suffix "*" (s-chop-prefix "*" bn))
+      bn)))
+
+
 (defun dockwin--get-buffers-sorted (position &optional frame)
   "Return the list of live buffers matching the window at POSITION in FRAME.
 The buffers are sorted alphabetically.  If none such buffer
 found, return nil.  FRAME defaults to current frame.  Position
 must be one of: top, bottom, left, right."
-  (--sort (string< (string-trim (buffer-name it))
-                   (string-trim (buffer-name other)))
+  (--sort (string< (dockwin--trim-buffer-name it)
+                   (dockwin--trim-buffer-name other))
    (--filter (let ((conf (dockwin--get-buffer-settings it)))
                (and conf (eq (dockwin--get-position-property conf) position)))
              (buffer-list frame))))
@@ -984,7 +1000,7 @@ omitted or nil enables the mode, `toggle' toggles the state."
         ;; Buffer is in a docking window
         (concat
          (propertize "│" 'face 'dockwin-mode-line-default-face)
-         (--reduce-from (let ((bn (propertize (string-trim (buffer-name it))
+         (--reduce-from (let ((bn (propertize (dockwin--trim-buffer-name it)
                                               'face
                                               (if (eq it (current-buffer))
                                                   'dockwin-mode-line-current-buffer-face
