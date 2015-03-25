@@ -412,6 +412,33 @@ top, bottom, left, right."
               (buffer-list frame)))))
 
 
+(defun dockwin--get-buffers (position &optional frame)
+  "Return the list of live buffers matching the window at POSITION in FRAME.
+The buffers are ordered according to history (most recent first).
+If a buffer was never added to history, the order is unspecified,
+but certainly after all buffers present in history.  If none such
+buffer found, return nil.  FRAME defaults to current frame.
+Position must be one of: top, bottom, left, right."
+  (-union
+   (--filter (buffer-live-p it)
+            (dockwin--get-buffer-history position frame))
+   (--filter (let ((conf (dockwin--get-buffer-settings it)))
+              (and conf (eq (dockwin--get-position-property conf) position)))
+            (buffer-list frame))))
+
+
+(defun dockwin--get-buffers-sorted (position &optional frame)
+  "Return the list of live buffers matching the window at POSITION in FRAME.
+The buffers are sorted alphabetically.  If none such buffer
+found, return nil.  FRAME defaults to current frame.  Position
+must be one of: top, bottom, left, right."
+  (--sort (string< (string-trim (buffer-name it))
+                   (string-trim (buffer-name other)))
+   (--filter (let ((conf (dockwin--get-buffer-settings it)))
+               (and conf (eq (dockwin--get-position-property conf) position)))
+             (buffer-list frame))))
+
+
 (defun dockwin--add-buffer-to-history (position buffer &optional frame)
   "Add to buffer history at POSITION the given BUFFER in FRAME.
 FRAME defaults to current frame."
@@ -821,12 +848,7 @@ If POSITION is nil, and inside a docking window, use the current window position
   (unless position
     (setq position (dockwin--get-window-position (selected-window))))
   (when position
-    (let* ((buffer-list-hist (--filter (buffer-live-p it)
-                                       (dockwin--get-buffer-history position)))
-           (buffer-list-valid (--filter (let ((conf (dockwin--get-buffer-settings it)))
-                                          (and conf (eq (dockwin--get-position-property conf) position)))
-                                        (buffer-list)))
-           (buffer-list (-union buffer-list-hist buffer-list-valid))
+    (let* ((buffer-list (dockwin--get-buffers position))
            (buffer-names (-map 'buffer-name buffer-list))
            (window (dockwin--get-window position)))
       (when buffer-names
@@ -903,19 +925,13 @@ omitted or nil enables the mode, `toggle' toggles the state."
         ;; Buffer is in a docking window
         (concat
          (propertize "│" 'face 'dockwin-mode-line-default-face)
-         (let* ((buffer-list
-                 (--sort (string< (string-trim (buffer-name it))
-                                  (string-trim (buffer-name other)))
-                         (--filter (let ((conf (dockwin--get-buffer-settings it)))
-                                     (and conf (eq (dockwin--get-position-property conf) position)))
-                                   (buffer-list)))))
-           (--reduce-from (let ((bn (propertize (string-trim (buffer-name it))
-                                                'face
-                                                (if (eq it (current-buffer))
-                                                    'dockwin-mode-line-current-buffer-face
-                                                  'dockwin-mode-line-other-buffer-face))))
-                            (if acc (concat acc "│" bn) bn))
-                          nil buffer-list))
+         (--reduce-from (let ((bn (propertize (string-trim (buffer-name it))
+                                              'face
+                                              (if (eq it (current-buffer))
+                                                  'dockwin-mode-line-current-buffer-face
+                                                'dockwin-mode-line-other-buffer-face))))
+                          (if acc (concat acc "│" bn) bn))
+                        nil (dockwin--get-buffers-sorted position))
          (propertize "│" 'face 'dockwin-mode-line-default-face))
       ;; Buffer is not in a docking window
       (propertize (buffer-name) 'face 'mode-line-buffer-id))))
