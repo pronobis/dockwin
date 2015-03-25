@@ -577,6 +577,8 @@ adding the previous window to history."
       (save-excursion
         (goto-char (point-max))
         (recenter -1)))
+    ;; Update keymap for docking windows
+    (dockwin--buffer-mode-update-keymap)
     ;; Return win-to
     win-to))
 ;; Add the adivce
@@ -967,6 +969,26 @@ Position must be one of: top, bottom, left, right."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; dockwin-buffer-mode
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defvar dockwin-buffer-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-x C-b")       'dockwin-switch-to-buffer)
+    (define-key map (kbd "C-x C-g")       'dockwin-close-window)
+    (define-key map (kbd "C-x C-k")       'dockwin-kill-buffer)
+    (define-key map (kbd "C-x C-<left>")  'dockwin-previous-buffer)
+    (define-key map (kbd "C-x C-<right>") 'dockwin-next-buffer)
+    map)
+  "Keymap for DockWin buffers when displayed in docking windows.")
+
+(defun dockwin--buffer-mode-update-keymap ()
+  "Update the current keymap in dockwin-buffer-mode.
+It disables the keymap for buffers not shown in a docking window."
+  (setq minor-mode-map-alist (--map-when (eq (car it) 'dockwin-buffer-mode)
+                                         (if (dockwin--get-window-position (selected-window))
+                                             (cons 'dockwin-buffer-mode dockwin-buffer-mode-map)
+                                           (cons 'dockwin-buffer-mode nil))
+                                         minor-mode-map-alist))
+  nil)
+
 (define-minor-mode dockwin-buffer-mode
   "DockWin buffer mode.
 
@@ -979,12 +1001,6 @@ any other prefix argument disables it. From Lisp, argument
 omitted or nil enables the mode, `toggle' toggles the state."
   :init-value nil
   :lighter " DockWinB"
-  ;; The minor mode bindings.
-  :keymap `((,(kbd "C-x C-b") . dockwin-switch-to-buffer)
-            (,(kbd "C-x C-g") . dockwin-close-window)
-            (,(kbd "C-x C-k") . dockwin-kill-buffer)
-            (,(kbd "C-x C-<left>") . dockwin-previous-buffer)
-            (,(kbd "C-x C-<right>") . dockwin-next-buffer))
   ;; Make this minor mode survive major mode change
   (put 'dockwin-buffer-mode 'permanent-local t)
   ;; Add modeline
