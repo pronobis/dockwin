@@ -36,7 +36,6 @@
   :group 'convenience
   :prefix "dockwin-")
 
-
 (defcustom dockwin-bottom-height-min 6
   "Bottom window size when inactive."
   :type 'integer
@@ -70,7 +69,6 @@
   :type 'integer
   :group 'dockwin)
 
-
 (defcustom dockwin-default-position 'bottom
   "Default docking window position for a buffer.
 This must be one of: left, top, right, or bottom.  This value
@@ -78,20 +76,17 @@ can be overridden by a property in `dockwin-buffer-settings'."
   :type 'symbol
   :group 'dockwin)
 
-
 (defcustom dockwin-default-kill nil
   "If not nil, buffers in docking windows will be killed by default.
 This value can be overridden by a property in `dockwin-buffer-settings'."
   :type 'boolean
   :group 'dockwin)
 
-
 (defcustom dockwin-default-activate t
   "If not nil, windows will be activated by default when buffers are displayed.
 This value can be overridden by a property in `dockwin-buffer-settings'."
   :type 'boolean
   :group 'dockwin)
-
 
 (defcustom dockwin-default-catch-switching nil
   "If not nil, `switch-to-buffer' events will be caught as well.
@@ -104,7 +99,6 @@ After catching such event, window will always be activated.
 This value can be overridden by a property in `dockwin-buffer-settings'."
   :type 'boolean
   :group 'dockwin)
-
 
 (defcustom dockwin-buffer-settings
   '(;; Bottom window
@@ -185,36 +179,30 @@ Available keywords:
                  (default-value symbol)))
   :group 'dockwin)
 
-
 (defcustom dockwin-add-buffers-to-modeline t
   "Set nil if you want to disable the modeline buffer list for docking windows."
   :type 'boolean
   :group 'dockwin)
-
 
 (defcustom dockwin-trim-special-buffer-names nil
   "If not nil, asterisks will be trimmed from special buffer names in mode-line."
   :type 'boolean
   :group 'dockwin)
 
-
 (defcustom dockwin-close-on-kill nil
   "If not nil, the docking window will be closed whenever a buffer is killed using `dockwin-kill-buffer'."
   :type 'boolean
   :group 'dockwin)
-
 
 (defface dockwin-mode-line-default-face
   '((t (:background nil)))
   "Face used for general text on DockWin mode-line."
   :group 'dockwin)
 
-
 (defface dockwin-mode-line-current-buffer-face
   '((t (:inherit mode-line-buffer-id :weight bold)))
   "Face used to display current buffer on DockWin mode-line."
   :group 'dockwin)
-
 
 (defface dockwin-mode-line-other-buffer-face
   '((t (:background nil :weight normal)))
@@ -312,29 +300,26 @@ The IGNORE argument is required by
       (when buf-config
         (or (cdr buf-config) t)))))
 
-
 (defun dockwin--get-position-property (buf-config)
   "Return the position property value given the BUF-CONFIG."
   (-let (((&plist :position position) buf-config))
     (or position dockwin-default-position 'bottom)))
-
 
 (defun dockwin--get-activate-property (buf-config)
   "Return the activate property value given the BUF-CONFIG."
   (-let (((&plist :activate activate) buf-config))
     (eq (or activate dockwin-default-activate) t)))  ; Non-t means false
 
-
 (defun dockwin--get-kill-property (buf-config)
   "Return the kill property value given the BUF-CONFIG."
   (-let (((&plist :kill kill) buf-config))
     (eq (or kill dockwin-default-kill) t)))   ; Non-t means false
 
-
 (defun dockwin--get-catch-switching-property (buf-config)
   "Return the catch-switching property value given the BUF-CONFIG."
   (-let (((&plist :catch-switching catch-switching) buf-config))
     (eq (or catch-switching dockwin-default-catch-switching) t)))  ; Non-t means false
+
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -353,7 +338,6 @@ windows in all frames."
                       nil               ; Init value
                       (frame-list))))
 
-
 (defun dockwin--get-buffer-history (position &optional frame)
   "Return buffer history at POSITION in FRAME.
 FRAME defaults to current frame."
@@ -362,7 +346,6 @@ FRAME defaults to current frame."
         ((eq position 'left) (dockwin--get-left-buffer-history frame))
         ((eq position 'right) (dockwin--get-right-buffer-history frame))))
 
-
 (defun dockwin--set-buffer-history (position history &optional frame)
   "Set buffer history at POSITION to HISTORY in FRAME.
 FRAME defaults to current frame."
@@ -370,7 +353,6 @@ FRAME defaults to current frame."
         ((eq position 'top) (dockwin--set-top-buffer-history history frame))
         ((eq position 'left) (dockwin--set-left-buffer-history history frame))
         ((eq position 'right) (dockwin--set-right-buffer-history history frame))))
-
 
 (defun dockwin--get-window (position &optional frame)
   "Return the current window at POSITION in FRAME if it's live.
@@ -384,7 +366,6 @@ Position must be one of: top, bottom, left, right."
         window
       nil)))
 
-
 (defun dockwin--set-window (position window &optional frame)
   "Set the current window at POSITION to WINDOW in FRAME.
 FRAME defaults to current frame."
@@ -392,7 +373,6 @@ FRAME defaults to current frame."
         ((eq position 'top) (dockwin--set-top-window window frame))
         ((eq position 'left) (dockwin--set-left-window window frame))
         ((eq position 'right) (dockwin--set-right-window window frame))))
-
 
 (defun dockwin--get-buffer (position &optional frame)
   "Return the most recent, live buffer from history at POSITION in FRAME.
@@ -406,7 +386,6 @@ top, bottom, left, right."
    (--first (let ((conf (dockwin--get-buffer-settings it)))
               (and conf (eq (dockwin--get-position-property conf) position)))
             (buffer-list frame))))
-
 
 (defun dockwin--get-other-buffer (position &optional frame)
   "Return the most recent, other, live buffer from history at POSITION in FRAME.
@@ -425,7 +404,6 @@ top, bottom, left, right."
                      (if second t (setq second t) nil)))
               (buffer-list frame)))))
 
-
 (defun dockwin--get-buffers (position &optional frame)
   "Return the list of live buffers matching the window at POSITION in FRAME.
 The buffers are ordered according to history (most recent first).
@@ -440,14 +418,12 @@ Position must be one of: top, bottom, left, right."
               (and conf (eq (dockwin--get-position-property conf) position)))
             (buffer-list frame))))
 
-
 (defun dockwin--trim-buffer-name (buffer)
   "Prepare trimmed buffer name for given BUFFER."
   (let ((bn (s-trim (buffer-name buffer))))
     (if dockwin-trim-special-buffer-names
         (s-chop-suffix "*" (s-chop-prefix "*" bn))
       bn)))
-
 
 (defun dockwin--get-buffers-sorted (position &optional frame)
   "Return the list of live buffers matching the window at POSITION in FRAME.
@@ -460,7 +436,6 @@ must be one of: top, bottom, left, right."
                (and conf (eq (dockwin--get-position-property conf) position)))
              (buffer-list frame))))
 
-
 (defun dockwin--add-buffer-to-history (position buffer &optional frame)
   "Add to buffer history at POSITION the given BUFFER in FRAME.
 FRAME defaults to current frame."
@@ -471,7 +446,6 @@ FRAME defaults to current frame."
     ;; Clear list of dead buffers
     (dockwin--set-buffer-history position
           (-filter 'buffer-live-p history) frame)))
-
 
 (defun dockwin--add-window-to-history (win &optional frame)
   "Add the window WIN to the history in FRAME.
@@ -488,14 +462,12 @@ MiniBuffer.  FRAME defaults to current frame."
       (setq history (-filter 'window-live-p history))
       (dockwin--set-window-history history frame))))
 
-
 (defun dockwin--get-previous-window (&optional frame)
   "Return the most recent, non-selected, live window from history in FRAME.
 FRAME defaults to current frame."
   (--first (and (not (eq it (selected-window)))
                 (window-live-p it))
            (dockwin--get-window-history frame)))
-
 
 (defun dockwin--get-next-buffer (position &optional frame)
   "Return the next buffer in docking window at POSITION in FRAME.
@@ -510,7 +482,6 @@ top, bottom, left, right."
     (if (eq result buf)   ; Nth returns first element for negative index
         nil
       result)))
-
 
 (defun dockwin--get-previous-buffer (position &optional frame)
   "Return the previous buffer in docking window at POSITION in FRAME.
@@ -584,7 +555,6 @@ adding the previous window to history."
 ;; Add the adivce
 (advice-add 'select-window :around #'dockwin--select-window)
 
-
 (defun dockwin--create-window (position)
   "Create a new docking window at POSITION.
 Return the window."
@@ -600,7 +570,6 @@ Return the window."
         ((eq position 'right)
          (split-window (frame-root-window)
                        (- dockwin-right-width-min) 'right))))
-
 
 (defun dockwin--display-buffer-function (buffer alist)
   "Display a docking window BUFFER with action ALIST in a docking window.
@@ -642,7 +611,6 @@ current frame."
              '(dockwin--get-buffer-settings
                (dockwin--display-buffer-function)))
 
-
 (defun dockwin--split-window-function (window)
   "Prevent the docking windows from being split.
 WINDOW used as in `split-window-sensibly'."
@@ -651,7 +619,6 @@ WINDOW used as in `split-window-sensibly'."
    (split-window-sensibly window)))
 ;; Use the function
 (setq split-window-preferred-function 'dockwin--split-window-function)
-
 
 (defun dockwin--quit-window (orig-fun &rest args)
   "Advice `quit-window' to return to previous window when quitting a docking window.
@@ -666,7 +633,6 @@ If `dockwin-always-kill-on-quit' is set, flag for killing."
     (quit-restore-window window (if kill 'kill 'bury))))
 ;; Use the advice
 (advice-add 'quit-window :around #'dockwin--quit-window)
-
 
 (defun dockwin--switch-to-buffer (orig-fun &rest args)
   "Advice `switch-to-buffer' to display docking buffers in docking window instead
@@ -713,6 +679,7 @@ of the current one."
   (dockwin--set-right-buffer-history nil))
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Interactive public functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -724,7 +691,6 @@ If there is no history, go to other window."
     (if window
         (select-window window)
       (other-window 1))))
-
 
 (defun dockwin-create-window (position)
   "Create the docking window at POSITION if not yet created.
@@ -747,14 +713,12 @@ Return the window."
           (message "No buffer to display")))
       window)))
 
-
 (defun dockwin-create-bottom-window ()
   "Create the bottom docking window if not yet created.
 Show the most recent buffer in the window.
 If there is no buffer to show, display message."
   (interactive)
   (dockwin-create-window 'bottom))
-
 
 (defun dockwin-create-top-window ()
   "Create the top docking window if not yet created.
@@ -763,7 +727,6 @@ If there is no buffer to show, display message."
   (interactive)
   (dockwin-create-window 'top))
 
-
 (defun dockwin-create-left-window ()
   "Create the left docking window if not yet created.
 Show the most recent buffer in the window.
@@ -771,14 +734,12 @@ If there is no buffer to show, display message."
   (interactive)
   (dockwin-create-window 'left))
 
-
 (defun dockwin-create-right-window ()
   "Create the right docking window if not yet created.
 Show the most recent buffer in the window.
 If there is no buffer to show, display message."
   (interactive)
   (dockwin-create-window 'right))
-
 
 (defun dockwin-activate-window (position)
   "Activate the docking window at POSITION if it's live.
@@ -791,14 +752,12 @@ If there is no buffer to show, display message.  Return the window."
         (when window
           (select-window window)))))
 
-
 (defun dockwin-activate-bottom-window ()
   "Activate the bottom docking window if it's live.
 If not, create it, activate it and show the most recent buffer.
 If there is no buffer to show, display message.  Return the window."
   (interactive)
   (dockwin-activate-window 'bottom))
-
 
 (defun dockwin-activate-top-window ()
   "Activate the top docking window if it's live.
@@ -807,7 +766,6 @@ If there is no buffer to show, display message.  Return the window."
   (interactive)
   (dockwin-activate-window 'top))
 
-
 (defun dockwin-activate-left-window ()
   "Activate the left docking window if it's live.
 If not, create it, activate it and show the most recent buffer.
@@ -815,14 +773,12 @@ If there is no buffer to show, display message.  Return the window."
   (interactive)
   (dockwin-activate-window 'left))
 
-
 (defun dockwin-activate-right-window ()
   "Activate the right docking window if it's live.
 If not, create it, activate it and show the most recent buffer.
 If there is no buffer to show, display message.  Return the window."
   (interactive)
   (dockwin-activate-window 'right))
-
 
 (defun dockwin-toggle-bottom-window ()
   "Activate the bottom docking window if it's not active.
@@ -832,7 +788,6 @@ If it is active, return to previous non-docking window."
       (dockwin-go-to-previous-window)
     (dockwin-activate-window 'bottom)))
 
-
 (defun dockwin-toggle-top-window ()
   "Activate the top docking window if it's not active.
 If it is active, return to previous non-docking window."
@@ -840,7 +795,6 @@ If it is active, return to previous non-docking window."
   (if (dockwin--get-window-position (selected-window))
       (dockwin-go-to-previous-window)
     (dockwin-activate-window 'top)))
-
 
 (defun dockwin-toggle-left-window ()
   "Activate the left docking window if it's not active.
@@ -850,7 +804,6 @@ If it is active, return to previous non-docking window."
       (dockwin-go-to-previous-window)
     (dockwin-activate-window 'left)))
 
-
 (defun dockwin-toggle-right-window ()
   "Activate the right docking window if it's not active.
 If it is active, return to previous non-docking window."
@@ -858,7 +811,6 @@ If it is active, return to previous non-docking window."
   (if (dockwin--get-window-position (selected-window))
       (dockwin-go-to-previous-window)
     (dockwin-activate-window 'right)))
-
 
 (defun dockwin-close-window (&optional position)
   "Close the docking window at POSITION if it's live.
@@ -871,30 +823,25 @@ currently selected window."
     (when window
       (delete-window window))))
 
-
 (defun dockwin-close-top-window ()
   "Close the top docking window if it's live.  If not, do nothing."
   (interactive)
   (dockwin-close-window 'top))
-
 
 (defun dockwin-close-bottom-window ()
   "Close the bottom docking window if it's live.  If not, do nothing."
   (interactive)
   (dockwin-close-window 'bottom))
 
-
 (defun dockwin-close-left-window ()
   "Close the left docking window if it's live.  If not, do nothing."
   (interactive)
   (dockwin-close-window 'left))
 
-
 (defun dockwin-close-right-window ()
   "Close the right docking window if it's live.  If not, do nothing."
   (interactive)
   (dockwin-close-window 'right))
-
 
 (defun dockwin-switch-to-buffer (&optional position)
   "Switch buffer in the window at POSITION to other valid buffer in that window.
@@ -915,7 +862,6 @@ If POSITION is nil, and inside a docking window, use the current window position
          (display-buffer
           (ido-completing-read "Switch to buffer: " buffer-names)))))))
 
-
 (defun dockwin-kill-buffer (&optional position)
   "Kill the current buffer in window at POSITION.
 Show the next valid buffer in the window instead.
@@ -934,9 +880,8 @@ If POSITION is nil, use the currently selected window."
                                           '((ignore-activate . t))))
       (kill-buffer cur-buf))))
 
-
 (defun dockwin-next-buffer (&optional position)
-  "Display the next buffer in docking window at POSITION in FRAME.
+  "Display the next buffer in docking window at POSITION.
 The next buffer is the next one in the alphabetical order.
 Position must be one of: top, bottom, left, right."
   (interactive)
@@ -950,9 +895,8 @@ Position must be one of: top, bottom, left, right."
         (dockwin--display-buffer-function buffer  ; Don't activate
                                           '((ignore-activate . t)))))))
 
-
 (defun dockwin-previous-buffer (&optional position)
-  "Display the previous buffer in docking window at POSITION in FRAME.
+  "Display the previous buffer in docking window at POSITION.
 The previous buffer is the previous one in the alphabetical order.
 Position must be one of: top, bottom, left, right."
   (interactive)
