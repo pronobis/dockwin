@@ -475,6 +475,35 @@ FRAME defaults to current frame."
            (dockwin--get-window-history frame)))
 
 
+(defun dockwin--get-next-buffer (position &optional frame)
+  "Return the next buffer in docking window at POSITION in FRAME.
+This assumes that buffers are sorted alphabetically.
+FRAME defaults to current frame.  Position must be one of:
+top, bottom, left, right."
+  (let* ((buf (dockwin--get-buffer position frame))
+         (buf-list (dockwin--get-buffers-sorted position frame))
+         (ind (-elem-index buf buf-list))
+         (result (and ind
+                      (nth (1+ ind) buf-list))))
+    (if (eq result buf)   ; Nth returns first element for negative index
+        nil
+      result)))
+
+
+(defun dockwin--get-previous-buffer (position &optional frame)
+  "Return the previous buffer in docking window at POSITION in FRAME.
+This assumes that buffers are sorted alphabetically.
+FRAME defaults to current frame.  Position must be one of:
+top, bottom, left, right."
+  (let* ((buf (dockwin--get-buffer position frame))
+         (buf-list (dockwin--get-buffers-sorted position frame))
+         (ind (-elem-index buf buf-list))
+         (result (and ind
+                      (nth (1- ind) buf-list))))
+    (if (eq result buf)   ; Nth returns first element for negative index
+        nil
+      result)))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Window behavior
@@ -868,13 +897,9 @@ If POSITION is nil, use the currently selected window."
   (interactive)
   (unless position
     (setq position (dockwin--get-window-position (selected-window))))
-  (let* ((window (dockwin--get-window position))
+  (let ((window (dockwin--get-window position))
          cur-buf other-buf)
-    (if (not window)
-        ;; Standard kill if buffer is outside the docking window
-        (unless position
-          (kill-buffer (current-buffer)))
-      ;; Kill in docking window
+    (when window
       (setq cur-buf (window-buffer window))
       (setq other-buf (dockwin--get-other-buffer position))
       (when other-buf
@@ -882,6 +907,38 @@ If POSITION is nil, use the currently selected window."
         (dockwin--display-buffer-function other-buf  ; Don't activate
                                           '((ignore-activate . t))))
       (kill-buffer cur-buf))))
+
+
+(defun dockwin-next-buffer (&optional position)
+  "Display the next buffer in docking window at POSITION in FRAME.
+The next buffer is the next one in the alphabetical order.
+Position must be one of: top, bottom, left, right."
+  (interactive)
+  (unless position
+    (setq position (dockwin--get-window-position (selected-window))))
+  (let ((window (dockwin--get-window position))
+         buffer)
+    (when window
+      (setq buffer (dockwin--get-next-buffer position))
+      (when buffer
+        (dockwin--display-buffer-function buffer  ; Don't activate
+                                          '((ignore-activate . t)))))))
+
+
+(defun dockwin-previous-buffer (&optional position)
+  "Display the previous buffer in docking window at POSITION in FRAME.
+The previous buffer is the previous one in the alphabetical order.
+Position must be one of: top, bottom, left, right."
+  (interactive)
+  (unless position
+    (setq position (dockwin--get-window-position (selected-window))))
+  (let ((window (dockwin--get-window position))
+        buffer)
+    (when window
+      (setq buffer (dockwin--get-previous-buffer position))
+      (when buffer
+        (dockwin--display-buffer-function buffer  ; Don't activate
+                                          '((ignore-activate . t)))))))
 
 
 
@@ -903,7 +960,9 @@ omitted or nil enables the mode, `toggle' toggles the state."
   ;; The minor mode bindings.
   :keymap `((,(kbd "C-x C-b") . dockwin-switch-to-buffer)
             (,(kbd "C-x C-g") . dockwin-close-window)
-            (,(kbd "C-x C-k") . dockwin-kill-buffer))
+            (,(kbd "C-x C-k") . dockwin-kill-buffer)
+            (,(kbd "C-x C-<left>") . dockwin-previous-buffer)
+            (,(kbd "C-x C-<right>") . dockwin-next-buffer))
   ;; Make this minor mode survive major mode change
   (put 'dockwin-buffer-mode 'permanent-local t)
   ;; Add modeline
