@@ -191,13 +191,13 @@ Available keywords:
 
 
 (defface dockwin-mode-line-default-face
-  '((t (:background nil :weight bold)))
+  '((t (:background nil)))
   "Face used for general text on DockWin mode-line."
   :group 'dockwin)
 
 
 (defface dockwin-mode-line-current-buffer-face
-  '((t (:inherit mode-line-buffer-id)))
+  '((t (:inherit mode-line-buffer-id :weight bold)))
   "Face used to display current buffer on DockWin mode-line."
   :group 'dockwin)
 
@@ -859,8 +859,7 @@ If POSITION is nil, and inside a docking window, use the current window position
   (let ((position (dockwin--get-window-position (selected-window))))
     (when position
       (concat
-       (propertize "["
-                   'face 'dockwin-mode-line-default-face)
+       (propertize "│" 'face 'dockwin-mode-line-default-face)
        (let* ((buffer-list
                (--sort (string< (string-trim (buffer-name it))
                                 (string-trim (buffer-name other)))
@@ -872,12 +871,9 @@ If POSITION is nil, and inside a docking window, use the current window position
                                               (if (eq it (current-buffer))
                                                   'dockwin-mode-line-current-buffer-face
                                                 'dockwin-mode-line-other-buffer-face))))
-                            (if acc
-                                (concat acc " " bn)
-                            bn))
+                            (if acc (concat acc "│" bn) bn))
                         nil buffer-list))
-       (propertize "]"
-                   'face 'dockwin-mode-line-default-face)))))
+       (propertize "│" 'face 'dockwin-mode-line-default-face)))))
 
 (defsubst dockwin--mode-line-set-p ()
   "Check if DockWin modeline is set."
@@ -887,8 +883,9 @@ If POSITION is nil, and inside a docking window, use the current window position
 (defun dockwin--add-mode-line ()
   "Add DockWin info to modeline."
   (when (and dockwin-add-buffers-to-modeline
+             (dockwin--get-buffer-settings (current-buffer))
              (not (dockwin--mode-line-set-p)))
-    (setq mode-line-format (cons dockwin--mode-line-format mode-line-format))))
+    (setq mode-line-buffer-identification dockwin--mode-line-format)))
 
 
 
