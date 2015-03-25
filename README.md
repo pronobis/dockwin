@@ -14,7 +14,6 @@ into larger packages (e.g. EDE) in a lightweight independent package. Also, Dock
 any of your non-docking windows (e.g. in order to re-create the layout) which might be important for
 other packages.
 
-**Note!** This package requires Emacs 24.4!
 
 Basic Usage
 -----------
@@ -32,9 +31,14 @@ When a docking window is activated, the command `dockwin-switch-to-buffer` is lo
 key, which by default is `C-x C-b`, and thus replaces the standard buffer list key. This command
 lists all the buffers that match the current docking window using IDO and allows for convenient
 switching between relevant buffers in a docking window. The buffers are listed in the order that
-they were current; the buffers that were current most recently come first. Also,
-`dockwin-close-window` which by default is bound to `C-x C-g` can be used to close (completely hide)
-the window (without killing/quitting any buffers).
+they were current; the buffers that were current most recently come first.
+
+When enabled, the modeline will display all buffers relevant for the docking window, sorted
+alphabetically. It is then possible to move to the previous/next buffer in alphabetical order using
+`dockwin-previous-buffer`/`dockwin-next-buffer`, by default bound to `C-x <left>`/`C-x <right>`.
+`C-x C-k` (`dockwin-kill-buffer`) can be used to kill a buffer and `C-x C-g`
+(`dockwin-close-window`) can be used to close (completely hide) the window (without killing/quitting
+any buffers).
 
 
 Installation
@@ -169,11 +173,16 @@ or by changing the following variables in your init file:
 
 - `dockwin-add-buffers-to-modeline` - Set to nil if you want to disable the modeline buffer list for docking windows.
 
+- `dockwin-trim-special-buffer-names` - If not nil, asterisks will be trimmed from special buffer names in mode-line.
+
 - `dockwin-mode-line-default-face` - Face used for general text on DockWin mode-line.
 
 - `dockwin-mode-line-current-buffer-face` - Face used to display current buffer on DockWin mode-line.
 
 - `dockwin-mode-line-other-buffer-face` - Face used to display other buffers on DockWin mode-line.
+
+- `dockwin-close-on-kill` - If not nil, the docking window will be closed whenever a buffer is
+  killed using `dockwin-kill-buffer`.
 
 
 Commands
@@ -242,3 +251,14 @@ Commands
 
 - `(dockwin-close-right-window ())` - Close the right docking window if it's live. If not, do
   nothing.
+
+- `(dockwin-kill-buffer (&optional position))` - Kill the current buffer in window at `POSITION`. Show
+  the next valid buffer in the window instead. If `POSITION` is nil, use the currently selected window.
+
+- `dockwin-next-buffer (&optional position)` - Display the next buffer in docking window at
+  `POSITION`. The next buffer is the next one in the alphabetical order. Position must be one of: top,
+  bottom, left, right.
+
+- `dockwin-previous-buffer (&optional position)` - Display the previous buffer in docking window at
+  `POSITION`. The previous buffer is the previous one in the alphabetical order. Position must be one
+  of: top, bottom, left, right.
