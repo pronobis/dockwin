@@ -732,19 +732,20 @@ Show the most recent buffer in the window.
 If there is no buffer to show, display message.
 Return the window."
   (interactive)
-  (let ((window (dockwin--get-window position))
-        (buffer (dockwin--get-buffer position)))
-    ;; If no window already
-    (unless window
-      ;; Check if we have a buffer for this window
-      (if buffer
-          ;; Recreate the window with previous buffer
-          (setq window
-                (dockwin--display-buffer-function buffer  ; Don't activate
-                                                  '((ignore-activate . t))))
-        ;; Otherwise, report an error
-        (message "No buffer to display")))
-    window))
+  (unless (eq major-mode 'minibuffer-inactive-mode)  ; Safety mechanism for things like helm
+    (let ((window (dockwin--get-window position))
+          (buffer (dockwin--get-buffer position)))
+      ;; If no window already
+      (unless window
+        ;; Check if we have a buffer for this window
+        (if buffer
+            ;; Recreate the window with previous buffer
+            (setq window
+                  (dockwin--display-buffer-function buffer  ; Don't activate
+                                                    '((ignore-activate . t))))
+          ;; Otherwise, report an error
+          (message "No buffer to display")))
+      window)))
 
 
 (defun dockwin-create-bottom-window ()
@@ -784,10 +785,11 @@ If there is no buffer to show, display message."
 If not, create it, activate it and show the most recent buffer.
 If there is no buffer to show, display message.  Return the window."
   (interactive)
-  (let ((window (dockwin-create-window position)))
-    ;; If window is live
-    (when window
-      (select-window window))))
+  (unless (eq major-mode 'minibuffer-inactive-mode)  ; Safety mechanism for things like helm
+      (let ((window (dockwin-create-window position)))
+        ;; If window is live
+        (when window
+          (select-window window)))))
 
 
 (defun dockwin-activate-bottom-window ()
