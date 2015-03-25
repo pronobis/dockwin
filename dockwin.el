@@ -198,6 +198,12 @@ Available keywords:
   :group 'dockwin)
 
 
+(defcustom dockwin-close-on-kill nil
+  "If not nil, the docking window will be closed whenever a buffer is killed using `dockwin-kill-buffer'."
+  :type 'boolean
+  :group 'dockwin)
+
+
 (defface dockwin-mode-line-default-face
   '((t (:background nil)))
   "Face used for general text on DockWin mode-line."
@@ -918,8 +924,8 @@ If POSITION is nil, use the currently selected window."
     (when window
       (setq cur-buf (window-buffer window))
       (setq other-buf (dockwin--get-other-buffer position))
-      (when other-buf
-        ;; Recreate the window with previous buffer
+      (when (and other-buf (not dockwin-close-on-kill))
+        ;; Change to other buffer
         (dockwin--display-buffer-function other-buf  ; Don't activate
                                           '((ignore-activate . t))))
       (kill-buffer cur-buf))))
