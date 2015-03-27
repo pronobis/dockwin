@@ -830,6 +830,7 @@ currently selected window."
     (setq position (dockwin--get-window-position (selected-window))))
   (let ((window (dockwin--get-window position)))
     (when window
+      (dockwin-go-to-previous-window)
       (delete-window window))))
 
 (defun dockwin-close-top-window ()
