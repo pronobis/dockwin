@@ -873,20 +873,14 @@ If POSITION is nil, and inside a docking window, use the current window position
 
 (defun dockwin-kill-buffer (&optional position)
   "Kill the current buffer in window at POSITION.
-Show the next valid buffer in the window instead.
 If POSITION is nil, use the currently selected window."
   (interactive)
   (unless position
     (setq position (dockwin--get-window-position (selected-window))))
   (let ((window (dockwin--get-window position))
-         cur-buf other-buf)
+        cur-buf)
     (when window
       (setq cur-buf (window-buffer window))
-      (setq other-buf (dockwin--get-other-buffer position))
-      (when (and other-buf (not dockwin-close-on-kill))
-        ;; Change to other buffer
-        (dockwin--display-buffer-function other-buf  ; Don't activate
-                                          '((ignore-activate . t))))
       (kill-buffer cur-buf))))
 
 (defun dockwin-next-buffer (&optional position)
