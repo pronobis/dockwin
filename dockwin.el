@@ -947,6 +947,7 @@ any other prefix argument disables it. From Lisp, argument
 omitted or nil enables the mode, `toggle' toggles the state."
   :init-value nil
   :lighter " DockWinB"
+  :keymap dockwin-buffer-mode-map
   ;; Make this minor mode survive major mode change
   (put 'dockwin-buffer-mode 'permanent-local t)
   ;; Add modeline
