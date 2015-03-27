@@ -396,23 +396,6 @@ top, bottom, left, right."
               (and conf (eq (dockwin--get-position-property conf) position)))
             (buffer-list frame))))
 
-(defun dockwin--get-other-buffer (position &optional frame)
-  "Return the most recent, other, live buffer from history at POSITION in FRAME.
-If no such buffer in history, try any live buffer that would
-match the window.  If none such buffer found, return nil.
-FRAME defaults to current frame.  Position must be one of:
-top, bottom, left, right."
-  (let (second)
-    (or
-     (--first (and (buffer-live-p it)
-                   (if second t (setq second t) nil))
-              (dockwin--get-buffer-history position frame))
-     (--first (let ((conf (dockwin--get-buffer-settings it)))
-                (and conf
-                     (eq (dockwin--get-position-property conf) position)
-                     (if second t (setq second t) nil)))
-              (buffer-list frame)))))
-
 (defun dockwin--get-buffers (position &optional frame)
   "Return the list of live buffers matching the window at POSITION in FRAME.
 The buffers are ordered according to history (most recent first).
