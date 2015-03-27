@@ -184,19 +184,28 @@ Available keywords:
   :type 'boolean
   :group 'dockwin)
 
-(defcustom dockwin-trim-special-buffer-names nil
+(defcustom dockwin-trim-special-buffer-names t
   "If not nil, asterisks will be trimmed from special buffer names in mode-line."
   :type 'boolean
   :group 'dockwin)
 
-(defcustom dockwin-close-on-kill nil
-  "If not nil, the docking window will be closed whenever a buffer is killed using `dockwin-kill-buffer'."
-  :type 'boolean
+(defcustom dockwin-on-kill 'deactivate
+  "Determines what should be done when a buffer is killed.
+If set to 'close, the window is closed.  If set to 'deactivate,
+the window is deactivated.  If set to nil, nothing happens,"
+  :type 'symbol
   :group 'dockwin)
 
-(defface dockwin-mode-line-default-face
+(defcustom dockwin-on-quit 'deactivate
+  "Determines what should be done when `quit-window' happens.
+If set to 'close, the window is closed.  If set to 'deactivate,
+the window is deactivated.  If set to nil, nothing happens,"
+  :type 'symbol
+  :group 'dockwin)
+
+(defface dockwin-mode-line-separator-face
   '((t (:background nil)))
-  "Face used for general text on DockWin mode-line."
+  "Face used for separators on DockWin mode-line."
   :group 'dockwin)
 
 (defface dockwin-mode-line-current-buffer-face
@@ -968,15 +977,17 @@ omitted or nil enables the mode, `toggle' toggles the state."
     (if position
         ;; Buffer is in a docking window
         (concat
-         (propertize "│" 'face 'dockwin-mode-line-default-face)
+         (propertize "│" 'face 'dockwin-mode-line-separator-face)
          (--reduce-from (let ((bn (propertize (dockwin--trim-buffer-name it)
                                               'face
                                               (if (eq it (current-buffer))
                                                   'dockwin-mode-line-current-buffer-face
                                                 'dockwin-mode-line-other-buffer-face))))
-                          (if acc (concat acc "│" bn) bn))
+                          (if acc (concat acc
+                                          (propertize "│" 'face 'dockwin-mode-line-separator-face)
+                                          bn) bn))
                         nil (dockwin--get-buffers-sorted position))
-         (propertize "│" 'face 'dockwin-mode-line-default-face))
+         (propertize "│" 'face 'dockwin-mode-line-separator-face))
       ;; Buffer is not in a docking window
       (propertize (buffer-name) 'face 'mode-line-buffer-id))))
 
