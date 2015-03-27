@@ -439,6 +439,17 @@ FRAME defaults to current frame."
     (dockwin--set-buffer-history position
           (-filter 'buffer-live-p history) frame)))
 
+(defun dockwin--burry-buffer-in-history (position buffer &optional frame)
+  "Burry the BUFFER in history at POSITION in FRAME.
+FRAME defaults to current frame."
+  (let ((history (dockwin--get-buffer-history position frame)))
+    ;; Add to list
+    (setq history (delq buffer history))
+    (add-to-list 'history buffer t)
+    ;; Clear list of dead buffers
+    (dockwin--set-buffer-history position
+                                 (-filter 'buffer-live-p history) frame)))
+
 (defun dockwin--add-window-to-history (win &optional frame)
   "Add the window WIN to the history in FRAME.
 If it is already in the history, just bring it to the front.
