@@ -506,42 +506,45 @@ top, bottom, left, right."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dockwin--select-window (orig-fun &rest args)
   "Advice for `select-window' epanding/collapsing docking windows and
-adding the previous window to history."
-  (let ((win-from (selected-window))
+adding the previous window to history. This function operates on the
+frame of the given window."
+  (let* ((win-from (selected-window))
+        (win-from-frame (window-frame win-from))
         (win-to (car args))
+        (win-to-frame (window-frame win-to))
         recenter)
     ;; Collapse the docking windows
-    (when (and (window-live-p (dockwin--get-bottom-window))
-               (eq win-from (dockwin--get-bottom-window)))
+    (when (and (window-live-p (dockwin--get-bottom-window win-from-frame))
+               (eq win-from (dockwin--get-bottom-window win-from-frame)))
       (enlarge-window (- dockwin-bottom-height-min (window-height))))
-    (when (and (window-live-p (dockwin--get-top-window))
-               (eq win-from (dockwin--get-top-window)))
+    (when (and (window-live-p (dockwin--get-top-window win-from-frame))
+               (eq win-from (dockwin--get-top-window win-from-frame)))
       (enlarge-window (- dockwin-top-height-min (window-height))))
-    (when (and (window-live-p (dockwin--get-left-window))
-               (eq win-from (dockwin--get-left-window)))
+    (when (and (window-live-p (dockwin--get-left-window win-from-frame))
+               (eq win-from (dockwin--get-left-window win-from-frame)))
       (enlarge-window (- dockwin-left-width-min (window-width)) t))
-    (when (and (window-live-p (dockwin--get-right-window))
-               (eq win-from (dockwin--get-right-window)))
+    (when (and (window-live-p (dockwin--get-right-window win-from-frame))
+               (eq win-from (dockwin--get-right-window win-from-frame)))
       (enlarge-window (- dockwin-right-width-min (window-width)) t))
     ;; Add win-to to history
-    (dockwin--add-window-to-history win-to)
+    (dockwin--add-window-to-history win-to win-to-frame)
     ;; Run the original function
     (apply orig-fun args)
     ;; Expand the docking window
-    (when (and (window-live-p (dockwin--get-bottom-window))
-               (eq win-to (dockwin--get-bottom-window)))
+    (when (and (window-live-p (dockwin--get-bottom-window win-to-frame))
+               (eq win-to (dockwin--get-bottom-window win-to-frame)))
       (enlarge-window (- dockwin-bottom-height-max (window-height)))
       (setq recenter t))
-    (when (and (window-live-p (dockwin--get-top-window))
-               (eq win-to (dockwin--get-top-window)))
+    (when (and (window-live-p (dockwin--get-top-window win-to-frame))
+               (eq win-to (dockwin--get-top-window win-to-frame)))
       (enlarge-window (- dockwin-top-height-max (window-height)))
       (setq recenter t))
-    (when (and (window-live-p (dockwin--get-left-window))
-               (eq win-to (dockwin--get-left-window)))
+    (when (and (window-live-p (dockwin--get-left-window win-to-frame))
+               (eq win-to (dockwin--get-left-window win-to-frame)))
       (enlarge-window (- dockwin-left-width-max (window-width)) t)
       (setq recenter t))
-    (when (and (window-live-p (dockwin--get-right-window))
-               (eq win-to (dockwin--get-right-window)))
+    (when (and (window-live-p (dockwin--get-right-window win-to-frame))
+               (eq win-to (dockwin--get-right-window win-to-frame)))
       (enlarge-window (- dockwin-right-width-max (window-width)) t)
       (setq recenter t))
     ;; Recenter the view
@@ -658,8 +661,10 @@ WINDOW used as in `split-window-sensibly'."
 (defun dockwin--quit-window (orig-fun &rest args)
   "Advice `quit-window' to implement quitting behavior for docking windows.
 This behavior is conditional on `dockwin-on-quit' and the `:kill' property
-of `dockwin-buffer-settings'."
+of `dockwin-buffer-settings'. This function operates on the frame of
+the window."
   (let* ((window (window-normalize-window (nth 1 args)))
+         (frame (window-frame window))
          (buffer (window-buffer window))
          (config (dockwin--get-buffer-settings buffer))
          (position (dockwin--get-window-position window))
@@ -674,10 +679,10 @@ of `dockwin-buffer-settings'."
           ;; Passing to the kill advice
           (kill-buffer buffer)
         ;; Bury buffer
-        (dockwin--burry-buffer-in-history position buffer)
-        (setq buffer (dockwin--get-buffer position))  ; Get new current
+        (dockwin--burry-buffer-in-history position buffer frame)
+        (setq buffer (dockwin--get-buffer position frame))  ; Get new current
         (cond ((eq dockwin-on-quit 'close)
-               (dockwin-close-window position))
+               (dockwin-close-window position frame))
               ((eq dockwin-on-quit 'deactivate)
                (dockwin--display-buffer-function buffer ; Don't activate
                                                  '((ignore-activate . t)))
@@ -721,6 +726,7 @@ of the current one."
 This behavior is conditional on `dockwin-on-kill'."
   (let* ((buffer (or (nth 0 args) (current-buffer)))
          (window (get-buffer-window buffer))
+         (frame (window-frame window))
          (position (dockwin--get-window-position window)))
     (if (not position)
         ;; Not in docking window
@@ -730,18 +736,18 @@ This behavior is conditional on `dockwin-on-kill'."
           (progn (set-window-dedicated-p window nil)
                  (apply orig-fun args))
         (set-window-dedicated-p window t))
-      (setq buffer (dockwin--get-buffer position))  ; Get new current
+      (setq buffer (dockwin--get-buffer position frame))  ; Get new current
       (cond ((eq dockwin-on-kill 'close)
-             (dockwin-close-window position))
+             (dockwin-close-window position frame))
             ((eq dockwin-on-kill 'deactivate)
              (if (not buffer)
-                 (dockwin-close-window position)
+                 (dockwin-close-window position frame)
                (dockwin--display-buffer-function buffer ; Don't activate
                                                  '((ignore-activate . t)))
                (dockwin-go-to-previous-window)))
             (t
              (if (not buffer)
-                 (dockwin-close-window position)
+                 (dockwin-close-window position frame)
                (dockwin--display-buffer-function buffer ; Don't activate
                                                  '((ignore-activate . t)))))))))
 ;; Use the advice
@@ -897,14 +903,14 @@ If it is active, return to previous non-docking window."
       (dockwin-go-to-previous-window)
     (dockwin-activate-window 'right)))
 
-(defun dockwin-close-window (&optional position)
-  "Close the docking window at POSITION if it's live.
+(defun dockwin-close-window (&optional position frame)
+  "Close the docking window at POSITION in FRAME if it's live.
 If not, do nothing.  If POSITION is nil, try to close the
-currently selected window."
+currently selected window.  FRAME defaults to current frame"
   (interactive)
   (unless position
     (setq position (dockwin--get-window-position (selected-window))))
-  (let ((window (dockwin--get-window position)))
+  (let ((window (dockwin--get-window position frame)))
     (when window
       (dockwin-go-to-previous-window)
       (delete-window window))))
