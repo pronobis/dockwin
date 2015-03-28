@@ -658,22 +658,28 @@ WINDOW used as in `split-window-sensibly'."
 ;;        - bury buffer in history
 ;;        - show the new current buffer
 
-(defun dockwin--quit-window (orig-fun &rest args)
-  "Advice `quit-window' to implement quitting behavior for docking windows.
+(defun dockwin--quit-restore-window (orig-fun &rest args)
+  "Advice `quit-restore-window' to implement quitting behavior for docking windows.
+It is better than advicing `quit-window' since sometimes `quit-restore-window'
+is being used directly (e.g. in case of the backtrace window).
 This behavior is conditional on `dockwin-on-quit' and the `:kill' property
 of `dockwin-buffer-settings'. This function operates on the frame of
 the window."
-  (let* ((window (window-normalize-window (nth 1 args)))
+  (let* ((window (window-normalize-window (nth 0 args) t))
          (frame (window-frame window))
          (buffer (window-buffer window))
          (config (dockwin--get-buffer-settings buffer))
          (position (dockwin--get-window-position window))
-         (kill (if (and config
+         (kill (or (and config
                         (dockwin--get-kill-property config))
-                   t (nth 0 args))))
+                   (eq (nth 1 args) 'kill))))
     (if (not position)
         ;; Not in docking window
-        (quit-restore-window window (if kill 'kill 'bury))
+        (funcall orig-fun
+                 (nth 0 args)
+                 (if kill
+                     'kill
+                     (nth 1 args)))
       ;; In docking window
       (if kill
           ;; Passing to the kill advice
@@ -691,7 +697,7 @@ the window."
                (dockwin--display-buffer-function buffer ; Don't activate
                                                  '((ignore-activate . t)))))))))
 ;; Use the advice
-(advice-add 'quit-window :around #'dockwin--quit-window)
+(advice-add 'quit-restore-window :around #'dockwin--quit-restore-window)
 
 (defun dockwin--switch-to-buffer (orig-fun &rest args)
   "Advice `switch-to-buffer' to display docking buffers in docking window instead
