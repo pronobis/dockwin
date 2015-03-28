@@ -4,10 +4,10 @@ DockWin - Lightweight Docking Windows for Emacs
 ![](screencast.gif?raw=true)
 
 DockWin provides four expandable side docking windows for your Emacs frame, one on each side of the
-frame (top, bottom, left, right). The windows have three states: closed, inactive, and active. They
-automatically expand when activated and collapse when inactive. Each window can be configured to
-host only certain selected buffers (e.g. use the bottom window for shells and compile windows, top
-for help windows and side for undo tree).
+frame (top, bottom, left, right). The docking windows have three states: closed, inactive, and
+active. They automatically expand when activated and collapse when inactive. Each window can be
+configured to host only certain selected buffers (e.g. use the bottom window for shells and compile
+windows, top for help windows and side for undo tree).
 
 The goal of DockWin is to provide the docking window functionality which can be found integrated
 into larger packages (e.g. EDE) in a lightweight independent package. Also, DockWin will not destroy
@@ -19,9 +19,9 @@ Basic Usage
 -----------
 
 Whenever a new dockable buffer is displayed, a docking window will be created. If you choose to
-automatically activate the window (see configuration), it will also be expanded and the focus will
+automatically activate the window (see Configuration), it will also be expanded and the focus will
 be placed in the window. The commands `dockwin-toggle-<position>-window` can be used to activate and
-deactivate a specific window. It's good to have a convenient binding for that.
+deactivate a specific window. It's good to have a convenient binding for that (see Key Bindings).
 
 The command `dockwin-go-to-previous-window` can be used globally to always go to the previous active
 non-docking window. I prefer that over the standard `other-window`, especially when coupled with
@@ -36,9 +36,12 @@ they were current; the buffers that were current most recently come first.
 When enabled, the modeline will display all buffers relevant for the docking window, sorted
 alphabetically. It is then possible to move to the previous/next buffer in alphabetical order using
 `dockwin-previous-buffer`/`dockwin-next-buffer`, by default bound to `C-x <left>`/`C-x <right>`.
-`C-x C-k` (`dockwin-kill-buffer`) can be used to kill a buffer and `C-x C-g`
-(`dockwin-close-window`) can be used to close (completely hide) the window (without killing/quitting
-any buffers).
+
+You can control what happens after killing a buffer or quitting a window (using `quit-window`). In
+such case, the docking window can remain active (displaying a different buffer), become inactive or
+completely closed (hidden). It is also possible to configure certain buffers to always be killed
+when quitting the window. `C-x C-g` bound to `dockwin-close-window` can be used to close the window
+without killing/quitting any buffers.
 
 
 Installation
@@ -99,7 +102,9 @@ non-docking windows, you can bind it globally e.g. over the standard `other-wind
 (global-set-key (kbd "C-x o") 'dockwin-dockwin-go-to-previous-window)
 ```
 
-Finally, if you would like to customize the key used for the `dockwin-switch-to-buffer` command in dock windows, modify the `dockwin-buffer-mode-map` as follows:
+Finally, if you would like to customize the local key bindings used inside the docked buffers,
+modify the `dockwin-buffer-mode-map`, e.g.:
+
 ```
 (define-key dockwin-buffer-mode-map (kbd "C-x C-b") nil)
 (define-key dockwin-buffer-mode-map (kbd "<new_key>") 'dockwin-switch-to-buffer)
@@ -175,14 +180,19 @@ or by changing the following variables in your init file:
 
 - `dockwin-trim-special-buffer-names` - If not nil, asterisks will be trimmed from special buffer names in mode-line.
 
-- `dockwin-mode-line-default-face` - Face used for general text on DockWin mode-line.
+- `dockwin-on-kill` - Determines what should be done when a buffer is killed. If set to 'close, the
+window is closed. If set to 'deactivate, the window is deactivated. If set to nil, nothing happens.
+
+- `dockwin-on-quit` - Determines what should be done when `quit-window' happens. If set to 'close,
+the window is closed. If set to 'deactivate, the window is deactivated. If set to nil, nothing
+happens.
+
+- `dockwin-mode-line-separator-face` - Face used for separators on DockWin mode-line.
 
 - `dockwin-mode-line-current-buffer-face` - Face used to display current buffer on DockWin mode-line.
 
 - `dockwin-mode-line-other-buffer-face` - Face used to display other buffers on DockWin mode-line.
 
-- `dockwin-close-on-kill` - If not nil, the docking window will be closed whenever a buffer is
-  killed using `dockwin-kill-buffer`.
 
 
 Commands
@@ -239,8 +249,9 @@ Commands
 - `(dockwin-toggle-right-window)` - Activate the right docking window if it's not active. If it is
   active, return to previous non-docking window.
 
-- `(dockwin-close-window (&optional position))` - Close the docking window at `POSITION` if it's
-  live. If not, do nothing. If `POSITION` is nil, try to close the currently selected window.
+- `(dockwin-close-window (&optional position frame))` - Close the docking window at POSITION in
+  FRAME if it's live. If not, do nothing. If POSITION is nil, try to close the currently selected
+  window. FRAME defaults to current frame
 
 - `(dockwin-close-top-window ())` - Close the top docking window if it's live. If not, do nothing.
 
