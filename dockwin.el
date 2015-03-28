@@ -1011,7 +1011,6 @@ Position must be one of: top, bottom, left, right."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-x C-b")       'dockwin-switch-to-buffer)
     (define-key map (kbd "C-x C-g")       'dockwin-close-window)
-    (define-key map (kbd "C-x C-k")       'kill-this-buffer)
     (define-key map (kbd "C-x C-<left>")  'dockwin-previous-buffer)
     (define-key map (kbd "C-x C-<right>") 'dockwin-next-buffer)
     map)
