@@ -110,6 +110,7 @@ This value can be overridden by a property in `dockwin-buffer-settings'."
     (term-mode                :catch-switching t)
     ("\\*MATLAB\\*"           :catch-switching t)
     ("\\*Backtrace\\*"        :kill t)
+    ("\\*Process List\\*")
     ("\\*Messages\\*")
     ;; Right window
     (" *undo-tree*"           :position right)
