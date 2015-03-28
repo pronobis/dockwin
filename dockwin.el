@@ -192,14 +192,14 @@ Available keywords:
 (defcustom dockwin-on-kill 'deactivate
   "Determines what should be done when a buffer is killed.
 If set to 'close, the window is closed.  If set to 'deactivate,
-the window is deactivated.  If set to nil, nothing happens,"
+the window is deactivated.  If set to nil, nothing happens."
   :type 'symbol
   :group 'dockwin)
 
 (defcustom dockwin-on-quit 'deactivate
   "Determines what should be done when `quit-window' happens.
 If set to 'close, the window is closed.  If set to 'deactivate,
-the window is deactivated.  If set to nil, nothing happens,"
+the window is deactivated.  If set to nil, nothing happens."
   :type 'symbol
   :group 'dockwin)
 
