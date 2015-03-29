@@ -77,8 +77,8 @@ If you plan to use all four windows and are not really using the default Fx bind
 If you need only one or two windows, this might work for you:
 
 ```
-(global-set-key (kbd "M-`") 'dockwin-toggle-bottom-window)
-(global-set-key (kbd "M-~") 'dockwin-toggle-right-window)
+(global-set-key (kbd "C-`") 'dockwin-toggle-bottom-window)
+(global-set-key (kbd "C-~") 'dockwin-toggle-right-window)
 ```
 
 It might also be convenient to specialize those bindings for particular major modes in order to
