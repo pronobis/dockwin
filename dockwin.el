@@ -102,7 +102,7 @@ This value can be overridden by a property in `dockwin-buffer-settings'."
 
 (defcustom dockwin-buffer-settings
   '(;; Bottom window
-    (completion-list-mode     :activate f)
+    (completion-list-mode     :activate f :kill t)
     (compilation-mode         :activate f)
     (help-mode)
     (flycheck-error-list-mode)
