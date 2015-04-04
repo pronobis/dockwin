@@ -481,11 +481,10 @@ top, bottom, left, right."
   (let* ((buf (dockwin--get-buffer position frame))
          (buf-list (dockwin--get-buffers-sorted position frame))
          (ind (-elem-index buf buf-list))
-         (result (and ind
-                      (nth (1+ ind) buf-list))))
-    (if (eq result buf)   ; Nth returns first element for negative index
-        nil
-      result)))
+         result)
+    (when ind
+      (setq ind (mod (1+ ind) (length buf-list)))
+      (nth ind buf-list))))
 
 (defun dockwin--get-previous-buffer (position &optional frame)
   "Return the previous buffer in docking window at POSITION in FRAME.
@@ -495,11 +494,10 @@ top, bottom, left, right."
   (let* ((buf (dockwin--get-buffer position frame))
          (buf-list (dockwin--get-buffers-sorted position frame))
          (ind (-elem-index buf buf-list))
-         (result (and ind
-                      (nth (1- ind) buf-list))))
-    (if (eq result buf)   ; Nth returns first element for negative index
-        nil
-      result)))
+         result)
+    (when ind
+      (setq ind (mod (1- ind) (length buf-list)))
+      (nth ind buf-list))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
