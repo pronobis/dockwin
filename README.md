@@ -77,8 +77,9 @@ If you plan to use all four windows and are not really using the default Fx bind
 If you need only one or two windows, this might work for you:
 
 ```
-(global-set-key (kbd "C-`") 'dockwin-toggle-bottom-window)
-(global-set-key (kbd "C-~") 'dockwin-toggle-right-window)
+(global-set-key (kbd "C-'") 'dockwin-toggle-bottom-window)
+(global-set-key (kbd "C-\"") 'dockwin-toggle-right-window)
+
 ```
 
 The `dockwin-go-to-previous-window` command is handy as well to jump between two frequently used
