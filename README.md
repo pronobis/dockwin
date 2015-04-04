@@ -56,7 +56,7 @@ M-x package-install dockwin
 Then, add the following line to your init file:
 
 ```
-(require 'multiple-cursors)
+(require 'dockwin)
 ```
 
 
@@ -79,20 +79,6 @@ If you need only one or two windows, this might work for you:
 ```
 (global-set-key (kbd "C-`") 'dockwin-toggle-bottom-window)
 (global-set-key (kbd "C-~") 'dockwin-toggle-right-window)
-```
-
-It might also be convenient to specialize those bindings for particular major modes in order to
-always go to the most relevant buffer first. For example, to always start/go to Python shell in
-python-mode, use this:
-
-```
-(add-hook 'python-mode-hook
-          (lambda ()
-            (define-key python-mode-map (kbd "C-'")
-              (lambda ()
-                (interactive)
-                (call-interactively 'run-python)
-                (display-buffer "*Python*")))) t)
 ```
 
 The `dockwin-go-to-previous-window` command is handy as well to jump between two frequently used
