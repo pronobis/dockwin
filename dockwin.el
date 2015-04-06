@@ -612,6 +612,11 @@ current frame."
         (when (or (eq position 'top) (eq position 'bottom))
           (make-local-variable 'scroll-margin)
           (setq scroll-margin 0))
+        ;; Make sure that if the buffer shows view-mode, it will
+        ;; not try to disable the mode on quit interfering with
+        ;; out quit handlers.
+        (make-local-variable 'view-no-disable-on-exit)
+        (setq-local view-no-disable-on-exit t)
         ;; Add our minor mode
         (dockwin-buffer-mode 1))
       ;; Select the window if it should become active
