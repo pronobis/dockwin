@@ -1097,6 +1097,14 @@ omitted or nil enables the mode, `toggle' toggles the state."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defconst dockwin--mode-line-format '(:eval (dockwin--get-mode-line)))
 
+(defun dockwin--create-mode-line-map (buffer)
+  "Create a keymap for modeline BUFFER button."
+  (let ((map (make-sparse-keymap)))
+    (define-key map [mode-line down-mouse-1] `(lambda ()
+                                                (interactive)
+                                                (display-buffer ,buffer)))
+    map))
+
 (defun dockwin--get-mode-line ()
   "Return mode-line string for the current docking window."
   (let ((position (dockwin--get-window-position (selected-window))))
@@ -1105,6 +1113,10 @@ omitted or nil enables the mode, `toggle' toggles the state."
         (concat
          (propertize "│" 'face 'dockwin-mode-line-separator-face)
          (--reduce-from (let ((bn (propertize (dockwin--trim-buffer-name it)
+                                              'local-map (dockwin--create-mode-line-map
+                                                          it)
+                                              'mouse-face 'mode-line-highlight
+                                              'help-echo "Switch to Buffer"
                                               'face
                                               (if (eq it (current-buffer))
                                                   'dockwin-mode-line-current-buffer-face

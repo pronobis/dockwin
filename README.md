@@ -3,45 +3,54 @@ DockWin - Lightweight Docking Windows for Emacs
 
 ![](screencast.gif?raw=true)
 
-DockWin provides four expandable side docking windows for your Emacs frame, one on each side of the
-frame (top, bottom, left, right). The docking windows have three states: closed, inactive, and
-active. They automatically expand when activated and collapse when inactive. Each window can be
-configured to host only certain selected buffers (e.g. use the bottom window for shells and compile
+DockWin provides four expandable side docking windows for your Emacs frame, one
+on each side of the frame (top, bottom, left, right). The docking windows have
+three states: closed, inactive, and active. They automatically expand when
+activated and collapse when inactive. Each window can be configured to host only
+certain selected buffers (e.g. use the bottom window for shells and compile
 windows, top for help windows and side for undo tree).
 
-The goal of DockWin is to provide the docking window functionality which can be found integrated
-into larger packages (e.g. EDE) in a lightweight independent package. Also, DockWin will not destroy
-any of your non-docking windows (e.g. in order to re-create the layout) which might be important for
-other packages.
+The goal of DockWin is to provide the docking window functionality which can be
+found integrated into larger packages (e.g. EDE) in a lightweight independent
+package. Also, DockWin will not destroy any of your non-docking windows (e.g. in
+order to re-create the layout) which might be important for other packages.
 
 
 Basic Usage
 -----------
 
-Whenever a new dockable buffer is displayed, a docking window will be created. If you choose to
-automatically activate the window (see Configuration), it will also be expanded and the focus will
-be placed in the window. The commands `dockwin-toggle-<position>-window` can be used to activate and
-deactivate a specific window. It's good to have a convenient binding for that (see Key Bindings).
+Whenever a new dockable buffer is displayed, a docking window will be created.
+If you choose to automatically activate the window (see Configuration), it will
+also be expanded and the focus will be placed in the window. The commands
+`dockwin-toggle-<position>-window` can be used to activate and deactivate a
+specific window. It's good to have a convenient binding for that (see Key
+Bindings).
 
-The command `dockwin-go-to-previous-window` can be used globally to always go to the previous active
-non-docking window. I prefer that over the standard `other-window`, especially when coupled with
+The command `dockwin-go-to-previous-window` can be used globally to always go to
+the previous active non-docking window. I prefer that over the standard
+`other-window`, especially when coupled with
 [Windmove](http://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html).
 
-When a docking window is activated, the command `dockwin-switch-to-buffer` is locally bound to a
-key, which by default is `C-x C-b`, and thus replaces the standard buffer list key. This command
-lists all the buffers that match the current docking window using IDO and allows for convenient
-switching between relevant buffers in a docking window. The buffers are listed in the order that
+When a docking window is activated, the command `dockwin-switch-to-buffer` is
+locally bound to a key, which by default is `C-x C-b`, and thus replaces the
+standard buffer list key. This command lists all the buffers that match the
+current docking window using IDO and allows for convenient switching between
+relevant buffers in a docking window. The buffers are listed in the order that
 they were current; the buffers that were current most recently come first.
 
-When enabled, the modeline will display all buffers relevant for the docking window, sorted
-alphabetically. It is then possible to move to the previous/next buffer in alphabetical order using
-`dockwin-previous-buffer`/`dockwin-next-buffer`, by default bound to `C-x <left>`/`C-x <right>`.
+When enabled, the mode-line will display all buffers relevant for the docking
+window, sorted alphabetically. It is then possible to move to the previous/next
+buffer in alphabetical order using
+`dockwin-previous-buffer`/`dockwin-next-buffer`, by default bound to `C-x
+<left>`/`C-x <right>`. It is also possible to simply click on the buffer name
+on the mode-line to switch to the buffer.
 
-You can control what happens after killing a buffer or quitting a window (using `quit-window`). In
-such case, the docking window can remain active (displaying a different buffer), become inactive or
-completely closed (hidden). It is also possible to configure certain buffers to always be killed
-when quitting the window. `C-x C-g` bound to `dockwin-close-window` can be used to close the window
-without killing/quitting any buffers.
+You can control what happens after killing a buffer or quitting a window (using
+`quit-window`). In such case, the docking window can remain active (displaying a
+different buffer), become inactive or completely closed (hidden). It is also
+possible to configure certain buffers to always be killed when quitting the
+window. `C-x C-g` bound to `dockwin-close-window` can be used to close the
+window without killing/quitting any buffers.
 
 
 Installation
