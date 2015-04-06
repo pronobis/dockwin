@@ -167,12 +167,18 @@ or by changing the following variables in your init file:
 
 - `dockwin-trim-special-buffer-names` - If not nil, asterisks will be trimmed from special buffer names in mode-line.
 
-- `dockwin-on-kill` - Determines what should be done when a buffer is killed. If set to 'close, the
-window is closed. If set to 'deactivate, the window is deactivated. If set to nil, nothing happens.
+- `dockwin-on-kill` - Determines what should be done when a buffer is killed.
+  This works only for `kill-buffer`. The behavior of `quit-window` even with the
+  `'kill` option is determined by `dockwin-on-quit`. If set to `'close`, the window
+  is closed. If set to `'deactivate`, the window is deactivated. If set to `nil`,
+  nothing happens, window is kept active.
 
-- `dockwin-on-quit` - Determines what should be done when `quit-window' happens. If set to 'close,
-the window is closed. If set to 'deactivate, the window is deactivated. If set to nil, nothing
-happens.
+- `dockwin-on-quit` - Determines what should be done when `quit-window` happens.
+  If set to `'close`, the window is closed. If set to `'close-bury`, the window
+  is closed and buffer buried. If set to `'deactivate`, the window is
+  deactivated. If set to `'deactivate-bury`, the window is deactivated and
+  buffer buried. If set to `'bury`, the buffer buried and window is kept active.
+  If set to `nil`, nothing happens, window is kept active."
 
 - `dockwin-mode-line-separator-face` - Face used for separators on DockWin mode-line.
 

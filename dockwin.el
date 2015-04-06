@@ -192,15 +192,22 @@ Available keywords:
 
 (defcustom dockwin-on-kill 'deactivate
   "Determines what should be done when a buffer is killed.
-If set to 'close, the window is closed.  If set to 'deactivate,
-the window is deactivated.  If set to nil, nothing happens."
+This works only for `kill-buffer'.  The behavior of `quit-window'
+even with the `kill' option is determined by `dockwin-on-quit'.
+If set to 'close, the window is closed.
+If set to 'deactivate, the window is deactivated.
+If set to nil, nothing happens, window is kept active."
   :type 'symbol
   :group 'dockwin)
 
 (defcustom dockwin-on-quit 'deactivate
   "Determines what should be done when `quit-window' happens.
-If set to 'close, the window is closed.  If set to 'deactivate,
-the window is deactivated.  If set to nil, nothing happens."
+If set to 'close, the window is closed.
+If set to 'close-bury, the window is closed and buffer buried.
+If set to 'deactivate, the window is deactivated.
+If set to 'deactivate-bury, the window is deactivated and buffer buried.
+If set to 'bury, the buffer buried and window is kept active.
+If set to nil, nothing happens, window is kept active."
   :type 'symbol
   :group 'dockwin)
 
@@ -441,7 +448,7 @@ FRAME defaults to current frame."
           (-filter 'buffer-live-p history) frame)))
 
 (defun dockwin--burry-buffer-in-history (position buffer &optional frame)
-  "Burry the BUFFER in history at POSITION in FRAME.
+  "In window at POSITION, bury the BUFFER in history.
 FRAME defaults to current frame."
   (let ((history (dockwin--get-buffer-history position frame)))
     ;; Add to list
@@ -504,9 +511,10 @@ top, bottom, left, right."
 ;;;; Window behavior
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dockwin--select-window (orig-fun &rest args)
-  "Advice for `select-window' epanding/collapsing docking windows and
-adding the previous window to history. This function operates on the
-frame of the given window."
+  "Advice for `select-window'.
+Epands/collapses the docking windows and adds the previous
+window to history.  This function operates on the frame of
+the given window.  ORIG-FUN and ARGS are advice arguments."
   (let* ((win-from (selected-window))
         (win-from-frame (window-frame win-from))
         (win-to (car args))
@@ -625,45 +633,68 @@ WINDOW used as in `split-window-sensibly'."
 ;; Use the function
 (setq split-window-preferred-function 'dockwin--split-window-function)
 
-;; Killing / quitting behavior. Implemented in
-;; dockwin--quit-window and dockwin--kill-buffer:
+
+;; Killing / quitting behavior.
+;; Implemented in
+;; dockwin--quit-restore-window and dockwin--kill-buffer:
+;;
 ;; -> Not in docking window
 ;;    - normal quit or kill
+;;
 ;; -> In docking window
-;; ---> Kill buffer
+;; ---> kill-buffer
 ;;      Note: Actual buffer killing must be done first,
 ;;            otherwise buffers with process will cause trouble
-;; -----> On kill: close
+;; -----> on-kill: close
 ;;        - kill buffer (protect window from closing)
 ;;        - close window (this goes to previous window)
-;; -----> On kill: deactivate
+;; -----> on-kill: deactivate
 ;;        - kill buffer (protect window from closing)
 ;;        - show the new current buffer
 ;;        - if no other buffer in window, close window
 ;;        - otherwise, go to previous window
-;; -----> On kill: nil
+;; -----> on-kill: nil
 ;;        - kill buffer (protect window from closing)
 ;;        - show the new current buffer
 ;;        - if no other buffer in window, close window
-;; ---> Bury buffer
-;; -----> On kill: close
+;; ---> quit-window with bury option
+;; -----> On quit: close
+;;        - close window (this goes to previous window)
+;; -----> On quit: close-bury
 ;;        - bury buffer in history
 ;;        - close window (this goes to previous window)
-;; -----> On kill: deactivate
+;; -----> On quit: deactivate
+;;        - go to previous window
+;; -----> On quit: deactivate-bury
 ;;        - bury buffer in history
 ;;        - show the new current buffer
 ;;        - go to previous window
-;; -----> On kill: nil
+;; -----> On quit: bury
 ;;        - bury buffer in history
 ;;        - show the new current buffer
+;; -----> On quit: nil
+;;        - do nothing
+;; ---> quit-window with kill option
+;; -----> on-quit: close / close-bury
+;;        - kill buffer (protect window from closing)
+;;        - close window (this goes to previous window)
+;; -----> on-quit: deactivate / deactivate-bury
+;;        - kill buffer (protect window from closing)
+;;        - show the new current buffer
+;;        - if no other buffer in window, close window
+;;        - otherwise, go to previous window
+;; -----> on-quit: nil / bury
+;;        - kill buffer (protect window from closing)
+;;        - show the new current buffer
+;;        - if no other buffer in window, close window
 
 (defun dockwin--quit-restore-window (orig-fun &rest args)
-  "Advice `quit-restore-window' to implement quitting behavior for docking windows.
+  "Advice `quit-restore-window' to implement quitting behavior.
 It is better than advicing `quit-window' since sometimes `quit-restore-window'
 is being used directly (e.g. in case of the backtrace window).
 This behavior is conditional on `dockwin-on-quit' and the `:kill' property
-of `dockwin-buffer-settings'. This function operates on the frame of
-the window."
+of `dockwin-buffer-settings'.  This function operates on the frame of
+the window.  ORIG-FUN and ARGS are advice arguments."
   (let* ((window (window-normalize-window (nth 0 args) t))
          (frame (window-frame window))
          (buffer (window-buffer window))
@@ -681,26 +712,39 @@ the window."
                      (nth 1 args)))
       ;; In docking window
       (if kill
-          ;; Passing to the kill advice
-          (kill-buffer buffer)
-        ;; Bury buffer
-        (dockwin--burry-buffer-in-history position buffer frame)
-        (setq buffer (dockwin--get-buffer position frame))  ; Get new current
+          ;; Passing to the kill advice, use on-quit as on-kill
+          (let ((dockwin-on-kill (cond ((or (eq dockwin-on-quit 'close)
+                                            (eq dockwin-on-quit 'close-bury))
+                                        'close)
+                                       ((or (eq dockwin-on-quit 'deactivate)
+                                            (eq dockwin-on-quit 'deactivate-bury))
+                                        'deactivate)
+                                       (t nil))))
+            (kill-buffer buffer))
         (cond ((eq dockwin-on-quit 'close)
                (dockwin-close-window position frame))
+              ((eq dockwin-on-quit 'close-bury)
+               (dockwin--burry-buffer-in-history position buffer frame)
+               (dockwin-close-window position frame))
               ((eq dockwin-on-quit 'deactivate)
+               (dockwin-go-to-previous-window))
+              ((eq dockwin-on-quit 'deactivate-bury)
+               (dockwin--burry-buffer-in-history position buffer frame)
+               (setq buffer (dockwin--get-buffer position frame))  ; Get new current
                (dockwin--display-buffer-function buffer ; Don't activate
                                                  '((ignore-activate . t)))
                (dockwin-go-to-previous-window))
-              (t
+              ((eq dockwin-on-quit 'bury)
+               (dockwin--burry-buffer-in-history position buffer frame)
+               (setq buffer (dockwin--get-buffer position frame))  ; Get new current
                (dockwin--display-buffer-function buffer ; Don't activate
                                                  '((ignore-activate . t)))))))))
 ;; Use the advice
 (advice-add 'quit-restore-window :around #'dockwin--quit-restore-window)
 
 (defun dockwin--switch-to-buffer (orig-fun &rest args)
-  "Advice `switch-to-buffer' to display docking buffers in docking window instead
-of the current one."
+  "Advice `switch-to-buffer' to display docking buffers in docking window.
+ORIG-FUN and ARGS are advice arguments."
   (let* ((buffer-or-name (nth 0 args))
          (buffer (window-normalize-buffer-to-switch-to buffer-or-name))
          (window (selected-window))
@@ -728,7 +772,8 @@ of the current one."
 
 (defun dockwin--kill-buffer (orig-fun &rest args)
   "Advice `kill-buffer' to control the post kill docking window behavior.
-This behavior is conditional on `dockwin-on-kill'."
+This behavior is conditional on `dockwin-on-kill'.
+ORIG-FUN and ARGS are advice arguments."
   (let* ((buffer (or (nth 0 args) (current-buffer)))
          (window (get-buffer-window buffer))
          (frame (window-frame window))
