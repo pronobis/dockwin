@@ -838,6 +838,35 @@ If there is no history, go to other window."
         (select-window window)
       (other-window 1))))
 
+(defun dockwin-swap-windows ()
+  "Swap buffers between the current and previous non-docking window."
+  (interactive)
+  (let* ((cur-win (selected-window))
+         (prev-win (or (dockwin--get-previous-window)
+                          (next-window cur-win))))
+    (when prev-win
+      (let* ((cur-buf (window-buffer cur-win))
+             (prev-buf (window-buffer prev-win))
+             (cur-start (window-start cur-win))
+             (prev-start (window-start prev-win)))
+        (set-window-buffer cur-win prev-buf)
+        (set-window-buffer prev-win cur-buf)
+        (set-window-start cur-win prev-start)
+        (set-window-start prev-win cur-start))
+      (select-window prev-win))))
+
+(defun dockwin-same-buffer-in-previous-window ()
+  "Show the current buffer also in the previous window."
+  (interactive)
+  (let* ((cur-win (selected-window))
+         (prev-win (or (dockwin--get-previous-window)
+                       (next-window cur-win))))
+    (when prev-win
+      (let* ((cur-buf (window-buffer cur-win))
+             (cur-start (window-start cur-win)))
+        (set-window-buffer prev-win cur-buf)
+        (set-window-start prev-win cur-start)))))
+
 (defun dockwin-create-window (position)
   "Create the docking window at POSITION if not yet created.
 Show the most recent buffer in the window.

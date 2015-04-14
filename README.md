@@ -30,6 +30,10 @@ The command `dockwin-go-to-previous-window` can be used globally to always go to
 the previous active non-docking window. I prefer that over the standard
 `other-window`, especially when coupled with
 [Windmove](http://www.gnu.org/software/emacs/manual/html_node/emacs/Window-Convenience.html).
+To accompany this command, there is also `dockwin-swap-windows` which swaps the
+buffers in the current and previous windows, and
+`dockwin-same-buffer-in-previous-window` which shows the current buffer also
+in the previous window.
 
 When a docking window is activated, the command `dockwin-switch-to-buffer` is
 locally bound to a key, which by default is `C-x C-b`, and thus replaces the
@@ -202,6 +206,10 @@ Commands
 
 - `(dockwin-go-to-previous-window)` - Go to previous non-docking window. If there is no history, go
   to other window.
+
+- `(dockwin-swap-windows)` - Swap buffers between the current and previous non-docking window.
+
+- `(dockwin-same-buffer-in-previous-window)` - Show the current buffer also in the previous window.
 
 - `(dockwin-switch-to-buffer (&optional position))` - Switch buffer in the window at `POSITION` to other
   valid buffer in that window. If `POSITION` is nil, and inside a docking window, use the current
