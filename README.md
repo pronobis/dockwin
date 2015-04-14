@@ -204,76 +204,76 @@ or by changing the following variables in your init file:
 Commands
 --------
 
-- `(dockwin-go-to-previous-window)` - Go to previous non-docking window. If there is no history, go
+- `dockwin-go-to-previous-window` - Go to previous non-docking window. If there is no history, go
   to other window.
 
-- `(dockwin-swap-windows)` - Swap buffers between the current and previous non-docking window.
+- `dockwin-swap-windows` - Swap buffers between the current and previous non-docking window.
 
-- `(dockwin-same-buffer-in-previous-window)` - Show the current buffer also in the previous window.
+- `dockwin-same-buffer-in-previous-window` - Show the current buffer also in the previous window.
 
-- `(dockwin-switch-to-buffer (&optional position))` - Switch buffer in the window at `POSITION` to other
+- `dockwin-switch-to-buffer (&optional position)` - Switch buffer in the window at `POSITION` to other
   valid buffer in that window. If `POSITION` is nil, and inside a docking window, use the current
   window position.
 
-- `(dockwin-create-window (position))` - Create the docking window at `POSITION` if not yet created.
+- `dockwin-create-window (position)` - Create the docking window at `POSITION` if not yet created.
   Show the most recent buffer in the window. If there is no buffer to show, display message. Return the
   window.
 
-- `(dockwin-create-bottom-window)` - Create the bottom docking window if not yet created. Show the
+- `dockwin-create-bottom-window` - Create the bottom docking window if not yet created. Show the
   most recent buffer in the window. If there is no buffer to show, display message.
 
-- `(dockwin-create-top-window)` - Create the top docking window if not yet created. Show the most
+- `dockwin-create-top-window` - Create the top docking window if not yet created. Show the most
   recent buffer in the window. If there is no buffer to show, display message.
 
-- `(dockwin-create-left-window)` - Create the left docking window if not yet created. Show the most
+- `dockwin-create-left-window` - Create the left docking window if not yet created. Show the most
   recent buffer in the window. If there is no buffer to show, display message.
 
-- `(dockwin-create-right-window)` - Create the right docking window if not yet created. Show the most
+- `dockwin-create-right-window` - Create the right docking window if not yet created. Show the most
   recent buffer in the window. If there is no buffer to show, display message.
 
-- `(dockwin-activate-window (position))` - Activate the docking window at `POSITION` if it's live.
+- `dockwin-activate-window (position)` - Activate the docking window at `POSITION` if it's live.
   If not, create it, activate it and show the most recent buffer. If there is no buffer to show,
   display message. Return the window.
 
-- `(dockwin-activate-bottom-window)` - Activate the bottom docking window if it's live. If not, create
+- `dockwin-activate-bottom-window` - Activate the bottom docking window if it's live. If not, create
   it, activate it and show the most recent buffer. If there is no buffer to show, display message.
 
-- `(dockwin-activate-top-window)` - Activate the top docking window if it's live. If not, create it,
+- `dockwin-activate-top-window` - Activate the top docking window if it's live. If not, create it,
   activate it and show the most recent buffer. If there is no buffer to show, display message.
 
-- `(dockwin-activate-left-window)` - Activate the left docking window if it's live. If not, create
+- `dockwin-activate-left-window` - Activate the left docking window if it's live. If not, create
   it, activate it and show the most recent buffer. If there is no buffer to show, display message.
 
-- `(dockwin-activate-right-window)` - Activate the right docking window if it's live. If not, create
+- `dockwin-activate-right-window` - Activate the right docking window if it's live. If not, create
   it, activate it and show the most recent buffer. If there is no buffer to show, display message.
 
-- `(dockwin-toggle-bottom-window)` - Activate the bottom docking window if it's not active. If it is
+- `dockwin-toggle-bottom-window` - Activate the bottom docking window if it's not active. If it is
   active, return to previous non-docking window.
 
-- `(dockwin-toggle-top-window)` - Activate the top docking window if it's not active. If it is
+- `dockwin-toggle-top-window` - Activate the top docking window if it's not active. If it is
   active, return to previous non-docking window.
 
-- `(dockwin-toggle-left-window)` - Activate the left docking window if it's not active. If it is
+- `dockwin-toggle-left-window` - Activate the left docking window if it's not active. If it is
   active, return to previous non-docking window.
 
-- `(dockwin-toggle-right-window)` - Activate the right docking window if it's not active. If it is
+- `dockwin-toggle-right-window` - Activate the right docking window if it's not active. If it is
   active, return to previous non-docking window.
 
-- `(dockwin-close-window (&optional position frame))` - Close the docking window at POSITION in
+- `dockwin-close-window (&optional position frame)` - Close the docking window at POSITION in
   FRAME if it's live. If not, do nothing. If POSITION is nil, try to close the currently selected
   window. FRAME defaults to current frame
 
-- `(dockwin-close-top-window ())` - Close the top docking window if it's live. If not, do nothing.
+- `dockwin-close-top-window` - Close the top docking window if it's live. If not, do nothing.
 
-- `(dockwin-close-bottom-window ())` - Close the bottom docking window if it's live. If not, do
+- `dockwin-close-bottom-window` - Close the bottom docking window if it's live. If not, do
   nothing.
 
-- `(dockwin-close-left-window ())` - Close the left docking window if it's live. If not, do nothing.
+- `dockwin-close-left-window` - Close the left docking window if it's live. If not, do nothing.
 
-- `(dockwin-close-right-window ())` - Close the right docking window if it's live. If not, do
+- `dockwin-close-right-window` - Close the right docking window if it's live. If not, do
   nothing.
 
-- `(dockwin-kill-buffer (&optional position))` - Kill the current buffer in window at `POSITION`. Show
+- `dockwin-kill-buffer (&optional position)` - Kill the current buffer in window at `POSITION`. Show
   the next valid buffer in the window instead. If `POSITION` is nil, use the currently selected window.
 
 - `dockwin-next-buffer (&optional position)` - Display the next buffer in docking window at
