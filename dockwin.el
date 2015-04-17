@@ -1183,7 +1183,15 @@ omitted or nil enables the mode, `toggle' toggles the state."
 ;; Let DockWin control what gets activated
 (setq help-window-select nil)
 
-
+(defun dockwin--ibuffer-quit (orig-fun &rest args)
+"`ibuffer-quit' advice, replacing it with standard quit in dock windows.
+This way we can handle it the same way as for other buffers."
+(if (dockwin--get-window-position (selected-window))
+    (quit-window)
+  ;; Run the original function
+  (apply orig-fun args)))
+;; Add the adivce
+(advice-add 'ibuffer-quit :around #'dockwin--ibuffer-quit)
 
 (provide 'dockwin)
 ;;; dockwin.el ends here
