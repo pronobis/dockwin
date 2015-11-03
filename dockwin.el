@@ -1,4 +1,4 @@
-;;; dockwin.el -- Lightweight Docking Windows for Emacs
+;;; dockwin.el --- Lightweight Docking Windows for Emacs
 
 ;; Copyright (C) 2015 Andrzej Pronobis
 
